@@ -24,10 +24,13 @@ Required for running fpicker:
 
 Required only when running in AFL++ mode:
 - [AFL++](https://github.com/AFLplusplus/AFLplusplus/)
-    - on macOS/iOS:
-        - apply the darwin.patch (this disables the check for CrashReporter)
-        - on iOS
-        - compile with `CFLAGS="-DUSEMMAP=1"`
+    - on macOS:
+        - Compile with `CFLAGS="-DUSEMMAP=1"`.
+    - on iOS:
+        - Apply the aflpp-ios.patch. This changes the shared mem and out file mode to 666 instead of
+          600. Fpicker needs to be run as root on iOS. If the target is not running as root, it will
+          not be able to read and write shared memory.
+        - Compile with `CFLAGS="-DUSEMMAP=1"`.
 
 
 ## Building and Running

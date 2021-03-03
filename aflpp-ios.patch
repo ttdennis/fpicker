@@ -1,0 +1,26 @@
+diff --git a/src/afl-fuzz-init.c b/src/afl-fuzz-init.c
+index 3dbc4c65..30676383 100644
+--- a/src/afl-fuzz-init.c
++++ b/src/afl-fuzz-init.c
+@@ -2069,7 +2069,7 @@ void setup_stdio_file(afl_state_t *afl) {
+ 
+   unlink(afl->fsrv.out_file);                              /* Ignore errors */
+ 
+-  afl->fsrv.out_fd = open(afl->fsrv.out_file, O_RDWR | O_CREAT | O_EXCL, 0600);
++  afl->fsrv.out_fd = open(afl->fsrv.out_file, O_RDWR | O_CREAT | O_EXCL, 0666);
+ 
+   if (afl->fsrv.out_fd < 0) {
+ 
+diff --git a/src/afl-sharedmem.c b/src/afl-sharedmem.c
+index 3241a130..f40b3cdc 100644
+--- a/src/afl-sharedmem.c
++++ b/src/afl-sharedmem.c
+@@ -163,7 +163,7 @@ u8 *afl_shm_init(sharedmem_t *shm, size_t map_size,
+ 
+   /* create the shared memory segment as if it was a file */
+   shm->g_shm_fd =
+-      shm_open(shm->g_shm_file_path, O_CREAT | O_RDWR | O_EXCL, 0600);
++      shm_open(shm->g_shm_file_path, O_CREAT | O_RDWR | O_EXCL, 0666);
+   if (shm->g_shm_fd == -1) { PFATAL("shm_open() failed"); }
+ 
+   /* configure the size of the shared memory segment */
