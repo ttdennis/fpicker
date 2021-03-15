@@ -10,9 +10,12 @@ are supported by Frida.
 * [Creating a Fuzzing Harness](#creating-a-fuzzing-harness)
 * [Modes and Configuration](#modes-and-configuration)
 
+Some background information and the thoughts and ideas behind fpicker can be found in [a
+blogpost](https://insinuator.net/2021/03/fpicker-fuzzing-with-frida/) I wrote.
+
 Fpicker is based on previous efforts on [ToothPicker](https://github.com/seemoo-lab/toothpicker),
-which was developed during my master thesis. Large parts of the development on fpicker were done
-during working hours at my employer [ERNW](https://ernw.de).
+which was developed during my master thesis. Most of fpicker was developed during working hours at
+my employer ([ERNW](https://ernw.de)).
 
 ## Requirements and Installation
 Required for running fpicker:
@@ -247,5 +250,4 @@ mutation certainly has lots of room for improvement.
 - **Standalone Mutator Custom:** This mutator can call an external command to mutate payloads. It
   writes the payload to stdin and receives the mutated payload from stdout. Due to its shallow
   implementation it has quite a performance impact.
-
 
