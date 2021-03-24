@@ -24,6 +24,8 @@ class Fuzzer {
         this.maps = this._make_maps();
         this.base = Module.getBaseAddress(this.module);
 
+        this.user_data = undefined;
+
         // default communication mode is via shared memory
         this.communication_mode = "SHM";
         this.fuzzer_mode = "STANDALONE";
@@ -141,6 +143,7 @@ class Fuzzer {
             _user_data.add(24).writePointer(ptr(mod.base).add(mod.size))
             _user_data.add(32).writeInt(0);
             _user_data.add(40).writePointer(this.stalker_pc_debug_logger);
+            this.user_data = _user_data;
         }
 
         for (let map in this.maps) {
@@ -233,6 +236,13 @@ class Fuzzer {
         return this.sem_open(sem_name, 0);
     }
 
+    _afl_reset_prev_loc() {
+        // reset ud->prev_loc on each iteration
+        if (this.fuzzer_mode == "AFL" && this.user_data) {
+            this.user_data.add(32).writeInt(0);
+        }
+    }
+
     debug_log() {
         if(this.DEBUG){
             console.log.apply(console, arguments);
@@ -256,6 +266,7 @@ class Fuzzer {
     }
 
     fuzzInternal(payload) {
+        this._afl_reset_prev_loc();
         if (this.communication_mode == "SEND") {
             const bytes = this.base64ToBytesArr(payload);
             Memory.writeByteArray(this.payload_buffer, bytes);
@@ -315,6 +326,7 @@ class Fuzzer {
             const self = this;
 
             try {
+                self._afl_reset_prev_loc();
                 self.fuzz(payload, payload_len);
             } catch(e) {
                 send({"type": "crash", "msg": e});
