@@ -250,182 +250,182 @@ fuzzer_state_t *parse_args(int argc, char **argv) {
             case 'U':
                 if (strncmp("null", optarg, 3) == 0) {
                     config->standalone_mutator = STANDALONE_MUTATOR_NULL;
-            } else if (strncmp("rand", optarg, 4) == 0) {
-                config->standalone_mutator = STANDALONE_MUTATOR_RAND;
-            } else if (strncmp("cmd", optarg, 3) == 0) {
-                config->standalone_mutator = STANDALONE_MUTATOR_CUSTOM;
-            } else {
-                plog("Unknown standalone mutator: %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'u':
-            if (strncmp("send", optarg, 4) == 0) {
-                config->communication_mode = COMMUNICATION_MODE_SEND;
-            } else if (strncmp("shm", optarg, 3) == 0) {
-                config->communication_mode = COMMUNICATION_MODE_SHM;
-            } else {
-                plog("Unknown communication mode: %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'I':
-            if (strncmp("in-process", optarg, 10) == 0) {
-                config->input_mode = INPUT_MODE_IN_PROCESS;
-            } else if (strncmp("cmd", optarg, 3) == 0) {
-                config->input_mode = INPUT_MODE_CMD;
-            } else {
-                plog("Unknown command mode: %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'e':
-            if (strncmp("spawn", optarg, 5) == 0) {
-                config->exec_mode = EXEC_MODE_SPAWN;
-            } else if (strncmp("attach", optarg, 6) == 0) {
-                config->exec_mode = EXEC_MODE_ATTACH;
-            } else {
-                plog("Unknown exec mode: %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'D':
-            if (strncmp("local", optarg, 5) == 0) {
-                config->device = DEVICE_LOCAL;
-            } else if (strncmp("usb", optarg, 3) == 0) {
-                config->device = DEVICE_USB;
-            } else {
-                plog("Unknown device type: %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'p':
-            // try to parse the process as PID first, otherwise it's the process name as string
-            _pid = atoi(optarg);
-            if (_pid > 0) {
-                fstate->target_pid = _pid;
-            } else {
-                size_t name_len = strlen(optarg) + 1;
-                config->process_name = malloc(name_len);
-                strncpy(config->process_name, optarg, name_len);
-            }
-            break;
-        case 'f': 
-            load_agent_script(fstate, optarg);
-            break;
-        case 'c':
-            arg_len = strlen(optarg) + 1;
-            config->command = malloc(arg_len);
-            strncpy(config->command, optarg, arg_len);
-            break;
-        case 'C':
-            arg_len = strlen(optarg) + 1;
-            config->custom_mutator_cmd = malloc(arg_len);
-            strncpy(config->custom_mutator_cmd, optarg, arg_len);
-            break;
-        case 't':
-            config->fuzzer_timeout  = atoi(optarg);
-            if (config->fuzzer_timeout <= 0) {
-                plog("[!] Invalid fuzzer timeout value %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 's':
-            config->fuzzer_sleep = atoi(optarg);
-            if (config->fuzzer_sleep <= 0) {
-                plog("[!] Invalid fuzzer sleep value %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'x':
-            config->seed = atoi(optarg);
-            if (config->seed <= 0) {
-                plog("[!] Invalid seed value %s\n", optarg);
-                do_exit(fstate);
-            }
-            break;
-        case 'i':
-            arg_len = strlen(optarg) + 1;
-            config->corpus_dir = malloc(arg_len);
-            strncpy(config->corpus_dir, optarg, arg_len);
-            break;
-        case 'o':
-            arg_len = strlen(optarg) + 1;
-            config->out_dir = malloc(arg_len);
-            strncpy(config->out_dir, optarg, arg_len);
-            break;
-        case 'M': config->metrics = true; break;
-        case 'v': config->verbose = true; verbose = true; break;
-        default: break;
+                } else if (strncmp("rand", optarg, 4) == 0) {
+                    config->standalone_mutator = STANDALONE_MUTATOR_RAND;
+                } else if (strncmp("cmd", optarg, 3) == 0) {
+                    config->standalone_mutator = STANDALONE_MUTATOR_CUSTOM;
+                } else {
+                    plog("Unknown standalone mutator: %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'u':
+                if (strncmp("send", optarg, 4) == 0) {
+                    config->communication_mode = COMMUNICATION_MODE_SEND;
+                } else if (strncmp("shm", optarg, 3) == 0) {
+                    config->communication_mode = COMMUNICATION_MODE_SHM;
+                } else {
+                    plog("Unknown communication mode: %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'I':
+                if (strncmp("in-process", optarg, 10) == 0) {
+                    config->input_mode = INPUT_MODE_IN_PROCESS;
+                } else if (strncmp("cmd", optarg, 3) == 0) {
+                    config->input_mode = INPUT_MODE_CMD;
+                } else {
+                    plog("Unknown command mode: %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'e':
+                if (strncmp("spawn", optarg, 5) == 0) {
+                    config->exec_mode = EXEC_MODE_SPAWN;
+                } else if (strncmp("attach", optarg, 6) == 0) {
+                    config->exec_mode = EXEC_MODE_ATTACH;
+                } else {
+                    plog("Unknown exec mode: %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'D':
+                if (strncmp("local", optarg, 5) == 0) {
+                    config->device = DEVICE_LOCAL;
+                } else if (strncmp("usb", optarg, 3) == 0) {
+                    config->device = DEVICE_USB;
+                } else {
+                    plog("Unknown device type: %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'p':
+                // try to parse the process as PID first, otherwise it's the process name as string
+                _pid = atoi(optarg);
+                if (_pid > 0) {
+                    fstate->target_pid = _pid;
+                } else {
+                    size_t name_len = strlen(optarg) + 1;
+                    config->process_name = malloc(name_len);
+                    strncpy(config->process_name, optarg, name_len);
+                }
+                break;
+            case 'f': 
+                load_agent_script(fstate, optarg);
+                break;
+            case 'c':
+                arg_len = strlen(optarg) + 1;
+                config->command = malloc(arg_len);
+                strncpy(config->command, optarg, arg_len);
+                break;
+            case 'C':
+                arg_len = strlen(optarg) + 1;
+                config->custom_mutator_cmd = malloc(arg_len);
+                strncpy(config->custom_mutator_cmd, optarg, arg_len);
+                break;
+            case 't':
+                config->fuzzer_timeout  = atoi(optarg);
+                if (config->fuzzer_timeout <= 0) {
+                    plog("[!] Invalid fuzzer timeout value %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 's':
+                config->fuzzer_sleep = atoi(optarg);
+                if (config->fuzzer_sleep <= 0) {
+                    plog("[!] Invalid fuzzer sleep value %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'x':
+                config->seed = atoi(optarg);
+                if (config->seed <= 0) {
+                    plog("[!] Invalid seed value %s\n", optarg);
+                    do_exit(fstate);
+                }
+                break;
+            case 'i':
+                arg_len = strlen(optarg) + 1;
+                config->corpus_dir = malloc(arg_len);
+                strncpy(config->corpus_dir, optarg, arg_len);
+                break;
+            case 'o':
+                arg_len = strlen(optarg) + 1;
+                config->out_dir = malloc(arg_len);
+                strncpy(config->out_dir, optarg, arg_len);
+                break;
+            case 'M': config->metrics = true; break;
+            case 'v': config->verbose = true; verbose = true; break;
+            default: break;
+        }
     }
-}
 
-if (!check_config(config)) {
-    free(config);
-    free(fstate);
-    do_exit(NULL);
-}
+    if (!check_config(config)) {
+        free(config);
+        free(fstate);
+        do_exit(NULL);
+    }
 
-print_config(config);
+    print_config(config);
 
-return fstate;
+    return fstate;
 }
 
 FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
-fuzzer_config_t *config = fstate->config;
+    fuzzer_config_t *config = fstate->config;
 
-FridaSession *session;
-GError *error = NULL;
-pid_t target_pid = 0;
-FridaDevice *device = fstate->frida_device;
+    FridaSession *session;
+    GError *error = NULL;
+    pid_t target_pid = 0;
+    FridaDevice *device = fstate->frida_device;
 
-if (config->exec_mode == EXEC_MODE_SPAWN) {
-    plog("[*] Trying to spawn %s on device %s\n", config->process_name, frida_device_get_name(device));
+    if (config->exec_mode == EXEC_MODE_SPAWN) {
+        plog("[*] Trying to spawn %s on device %s\n", config->process_name, frida_device_get_name(device));
 
-    FridaSpawnOptions *spawn_options = frida_spawn_options_new();
-    if (config->spawn_argc > 1) {
-        frida_spawn_options_set_argv(spawn_options, config->spawn_argv, config->spawn_argc);
-    }
+        FridaSpawnOptions *spawn_options = frida_spawn_options_new();
+        if (config->spawn_argc > 1) {
+            frida_spawn_options_set_argv(spawn_options, config->spawn_argv, config->spawn_argc);
+        }
 
-    target_pid = frida_device_spawn_sync(device, config->process_name, spawn_options, NULL, &error);
-    g_object_unref(spawn_options);
-    if (error) {
-        plog("[!] Failed to spawn %s\n", config->process_name);
-        return NULL; 
-    }
+        target_pid = frida_device_spawn_sync(device, config->process_name, spawn_options, NULL, &error);
+        g_object_unref(spawn_options);
+        if (error) {
+            plog("[!] Failed to spawn %s\n", config->process_name);
+            return NULL; 
+        }
 
-    plog("[*] Spawned %s with PID %d\n", config->process_name, target_pid);
-} else {
-    if (config->process_name != NULL) {
-        plog("[*] Trying to attach to process %s\n", config->process_name);
-        // This loop is mainly for afl-cmin as the attached binary often seems to
-        // crash when afl-showmap is run. When it's a daemon like bluetoothd, it
-        // will take a while to restart so we just wait here.
-        for (int retry = 0; retry <= 5 && target_pid == 0; retry++) {
-            FridaProcessList *proc_list = frida_device_enumerate_processes_sync(device, NULL, &error);
-            for (int i = 0; i < frida_process_list_size(proc_list) && target_pid == 0; i++) {
-                FridaProcess *proc = frida_process_list_get(proc_list, i);
-                if (strncmp(frida_process_get_name(proc), config->process_name, strlen(config->process_name)) == 0) {
-                    target_pid = frida_process_get_pid(proc);
-                    plog("[*] Found process %s with PID %d\n", config->process_name, target_pid);
+        plog("[*] Spawned %s with PID %d\n", config->process_name, target_pid);
+    } else {
+        if (config->process_name != NULL) {
+            plog("[*] Trying to attach to process %s\n", config->process_name);
+            // This loop is mainly for afl-cmin as the attached binary often seems to
+            // crash when afl-showmap is run. When it's a daemon like bluetoothd, it
+            // will take a while to restart so we just wait here.
+            for (int retry = 0; retry <= 5 && target_pid == 0; retry++) {
+                FridaProcessList *proc_list = frida_device_enumerate_processes_sync(device, NULL, &error);
+                for (int i = 0; i < frida_process_list_size(proc_list) && target_pid == 0; i++) {
+                    FridaProcess *proc = frida_process_list_get(proc_list, i);
+                    if (strncmp(frida_process_get_name(proc), config->process_name, strlen(config->process_name)) == 0) {
+                        target_pid = frida_process_get_pid(proc);
+                        plog("[*] Found process %s with PID %d\n", config->process_name, target_pid);
+                    }
+                }
+                if (target_pid == 0) {
+                    plog("[!] Unable to find %s PID, retrying.\n", config->process_name);
+                    sleep(1);
                 }
             }
-            if (target_pid == 0) {
-                plog("[!] Unable to find %s PID, retrying.\n", config->process_name);
-                sleep(1);
-            }
+        } else {
+            target_pid = fstate->target_pid;
         }
-    } else {
-        target_pid = fstate->target_pid;
-    }
 
-    if (target_pid == 0) {
-        plog("[!] Unable to find process %s to attach to (after 5 retries)\n", config->process_name);
-        return NULL; 
-    }
+        if (target_pid == 0) {
+            plog("[!] Unable to find process %s to attach to (after 5 retries)\n", config->process_name);
+            return NULL; 
+        }
 
-    fstate->target_pid = target_pid;
-}
+        fstate->target_pid = target_pid;
+    }
 
     // once we can use the newer Frida versions, the device_attach_sync call needs to look like this:
     // session = frida_device_attach_sync(device, target_pid, FRIDA_REALM_NATIVE, NULL, &error);
