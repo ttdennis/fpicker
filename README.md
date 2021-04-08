@@ -22,8 +22,7 @@ Required for running fpicker:
 - [frida_compile](https://github.com/frida/frida-compile) to compile the harness script into one JS file
 - The `frida-core-devkit` for the respective platform found at [Frida releases on GitHub](https://github.com/frida/frida/releases)
     - depending on the platform you want to target store the library as `frida-core-ios.a`, `frida-core-macos.a`, or `frida-core-linux.a`. 
-    Also, linux and macOS/iOS apparently have different header files. For macOS and iOS version `14.0.8` should be used as the built in
-    compiler/linker has a bug where CModules cannot be properly linked.
+    Also, linux and macOS/iOS apparently have different header files. 
 
 Required only when running in AFL++ mode:
 - [AFL++](https://github.com/AFLplusplus/AFLplusplus/)

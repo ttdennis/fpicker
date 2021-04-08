@@ -20,4 +20,7 @@ module.exports = new CModule(`
     }
     return ptr;
   }
-`);
+`, {
+  "mmap": Module.getExportByName(null, "mmap"),
+  "shm_open": Module.getExportByName(null, "shm_open"),
+});
