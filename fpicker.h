@@ -77,6 +77,7 @@ typedef enum EXEC_MODE {
 
 typedef enum DEVICE {
     DEVICE_LOCAL,
+    DEVICE_REMOTE,
     DEVICE_USB
 } device_t;
 
@@ -149,7 +150,7 @@ typedef struct _coverage_t {
 typedef struct _bb_entry_t {
    uint32_t start;
    uint16_t size;
-   uint16_t mod_id; 
+   uint16_t mod_id;
 } bb_entry_t;
 
 typedef struct _module_t {
@@ -223,7 +224,7 @@ struct timeval *_start_measure();
 uint64_t _stop_measure(struct timeval *t);
 
 // AFL Fuzzer Mode Functions
-#define FORKSRV_FD 198 
+#define FORKSRV_FD 198
 void run_forkserver(fuzzer_state_t *fstate);
 
 // Standalone Mode Stuff

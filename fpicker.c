@@ -140,6 +140,15 @@ bool check_config(fuzzer_config_t *config) {
             plog("[!] Fuzzer mode AFL not possible with USB device.\n");
             return false;
         }
+    } else if (config->device == DEVICE_REMOTE) {
+        if (config->communication_mode == COMMUNICATION_MODE_SHM) {
+            plog("[!] Shared memory communication mode not possible with remote device.\n");
+            return false;
+        }
+        if (config->fuzzer_mode == FUZZER_MODE_AFL) {
+            plog("[!] Fuzzer mode AFL not possible with remote device.\n");
+            return false;
+        }
     }
     if (config->standalone_mutator == STANDALONE_MUTATOR_CUSTOM && config->custom_mutator_cmd == NULL) {
         plog("[!] Mutator mode set to CMD but no command supplied (--mutator-command)\n");
@@ -150,9 +159,10 @@ bool check_config(fuzzer_config_t *config) {
 
 void print_config(fuzzer_config_t *config) {
     char *fuzzer_mode_string;
+    char *fuzzer_device_string;
 
     plog("Running fpicker using the following configuration:\n");
-    
+
     if (config->fuzzer_mode == FUZZER_MODE_AFL) {
         fuzzer_mode_string = "FUZZER_MODE_AFL";
     } else if (config->fuzzer_mode == FUZZER_MODE_STANDALONE_ACTIVE) {
@@ -160,14 +170,22 @@ void print_config(fuzzer_config_t *config) {
     } else {
         fuzzer_mode_string = "FUZZER_MODE_STANDALONE_PASSIVE";
     }
+
+    if (config->device == DEVICE_LOCAL) {
+        fuzzer_device_string = "DEVICE_LOCAL";
+    } else if (config->device == DEVICE_USB) {
+        fuzzer_device_string = "DEVICE_USB";
+    } else {
+        fuzzer_device_string = "DEVICE_REMOTE";
+    }
     plog("- fuzzer-mode: \t\t\t%s\n", fuzzer_mode_string);
     plog("- coverage_mode: \t\t%s\n", config->coverage_mode == COVERAGE_MODE_AFL_BITMAP ? "COVERAGE_MODE_AFL_BITMAP" : "COVERAGE_MODE_STALKER_SUMMARY");
-    plog("- standalone_mutator: \t\t%s\n", config->standalone_mutator == STANDALONE_MUTATOR_NULL ? "STANDALONE_MUTATOR_NULL" : 
+    plog("- standalone_mutator: \t\t%s\n", config->standalone_mutator == STANDALONE_MUTATOR_NULL ? "STANDALONE_MUTATOR_NULL" :
         config->standalone_mutator == STANDALONE_MUTATOR_RAND ? "STANDALONE_MUTATOR_RAND" : "STANDALONE_MUTATOR_CMD");
     plog("- communication_mode: \t\t%s\n", config->communication_mode == COMMUNICATION_MODE_SEND ? "COMMUNICATION_MODE_SEND" : "COMMUNICATION_MODE_SHM");
     plog("- input_mode: \t\t\t%s\n", config->input_mode == INPUT_MODE_CMD ? "INPUT_MODE_CMD" : "INPUT_MODE_IN_PROCESS");
     plog("- exec_mode: \t\t\t%s\n", config->exec_mode == EXEC_MODE_SPAWN ? "EXEC_MODE_SPAWN" : "EXEC_MODE_ATTACH");
-    plog("- device_type: \t\t\t%s\n", config->device == DEVICE_LOCAL ? "DEVICE_LOCAL" : "DEVICE_USB");
+    plog("- device_type: \t\t\t%s\n", fuzzer_device_string);
     plog("- process_name: \t\t%s\n", config->process_name);
     plog("- command: \t\t\t%s\n", config->command);
     plog("- fuzzer_timeout: \t\t%d\n", config->fuzzer_timeout);
@@ -294,6 +312,8 @@ fuzzer_state_t *parse_args(int argc, char **argv) {
                     config->device = DEVICE_LOCAL;
                 } else if (strncmp("usb", optarg, 3) == 0) {
                     config->device = DEVICE_USB;
+                } else if (strncmp("remote", optarg, 6) == 0) {
+                    config->device = DEVICE_REMOTE;
                 } else {
                     plog("Unknown device type: %s\n", optarg);
                     do_exit(fstate);
@@ -310,7 +330,7 @@ fuzzer_state_t *parse_args(int argc, char **argv) {
                     strncpy(config->process_name, optarg, name_len);
                 }
                 break;
-            case 'f': 
+            case 'f':
                 load_agent_script(fstate, optarg);
                 break;
             case 'c':
@@ -391,7 +411,7 @@ FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
         g_object_unref(spawn_options);
         if (error) {
             plog("[!] Failed to spawn %s\n", config->process_name);
-            return NULL; 
+            return NULL;
         }
 
         plog("[*] Spawned %s with PID %d\n", config->process_name, target_pid);
@@ -421,7 +441,7 @@ FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
 
         if (target_pid == 0) {
             plog("[!] Unable to find process %s to attach to (after 5 retries)\n", config->process_name);
-            return NULL; 
+            return NULL;
         }
 
         fstate->target_pid = target_pid;
@@ -432,9 +452,14 @@ FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
     if (error != NULL) {
         plog("[!] Failed to attach to process %s on frida device %s (%s)\n", config->process_name, frida_device_get_name(device), error->message);
         g_error_free(error);
-        return NULL; 
+        return NULL;
     }
-    
+
+    if (config->process_name == NULL && config->device == DEVICE_REMOTE) {
+        plog("[!] Process name is null! Try using process name instead of PID on remote devices.\n");
+        plog("[!] Use 'frida-ps -R' to get a list of process names from the remote device.\n");
+    }
+
     plog("[*] Attached to process %s on frida device %s\n", config->process_name, frida_device_get_name(device));
 
     return session;
@@ -458,10 +483,10 @@ bool inject_frida_script(fuzzer_state_t *fstate) {
     }
 
     plog("[*] Agent script created\n");
-    
+
     // set up message handler callback to receive messages from frida agent
     g_signal_connect(fstate->script, "message", G_CALLBACK(on_message), (gpointer)fstate);
-    // set up the detach handler callback to react to frida detach 
+    // set up the detach handler callback to react to frida detach
     g_signal_connect(fstate->session, "detached", G_CALLBACK (on_detached), (gpointer)fstate);
 
     frida_script_load_sync(fstate->script, NULL, &error);
@@ -479,13 +504,13 @@ bool inject_frida_script(fuzzer_state_t *fstate) {
 }
 
 void print_banner() {
-    plog("       __       _      _                     \n" 
-         "      / _|     (_)    | |                    \n" 
-         "     | |_ _ __  _  ___| | _____ _ __         \n" 
+    plog("       __       _      _                     \n"
+         "      / _|     (_)    | |                    \n"
+         "     | |_ _ __  _  ___| | _____ _ __         \n"
          "     |  _| '_ \\| |/ __| |/ / _ \\ '__|      \n"
-         "     | | | |_) | | (__|   <  __/ |           \n" 
-         "     |_| | .__/|_|\\___|_|\\_\\___|_|        \n" 
-         "         | |                                 \n" 
+         "     | | | |_) | | (__|   <  __/ |           \n"
+         "     |_| | .__/|_|\\___|_|\\_\\___|_|        \n"
+         "         | |                                 \n"
          "         |_|        Frida-Based Fuzzing Suite\n"
          "- - - - - - - - - - - - - - - - - - - - - - -\n\n");
 }
@@ -499,7 +524,7 @@ int main(int argc, char **argv) {
     GError *error = NULL;
     gint num_devices = 0;
 
-    // If the AFL env var is defined, we're probably running in AFL so all output goes 
+    // If the AFL env var is defined, we're probably running in AFL so all output goes
     // to syslog, regardless of whether the user specified AFL mode or not
     if (getenv(SHM_ENV_VAR)) {
         log_to_syslog = true;
@@ -546,6 +571,8 @@ int main(int argc, char **argv) {
     FridaDeviceType desired_type = FRIDA_DEVICE_TYPE_LOCAL;
     if (fstate->config->device == DEVICE_USB) {
         desired_type = FRIDA_DEVICE_TYPE_USB;
+    } else if (fstate->config->device == DEVICE_REMOTE) {
+        desired_type = FRIDA_DEVICE_TYPE_REMOTE;
     }
     for (int i = 0; i < num_devices && device == NULL; i++) {
         FridaDevice *dev = frida_device_list_get(devices, i);
