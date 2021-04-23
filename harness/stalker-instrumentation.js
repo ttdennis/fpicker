@@ -2,9 +2,7 @@ let pc = undefined;
 
 if (Process.arch == "x64") {
   pc = "rip";
-} else if (Process.arch == "arm64") {
-  pc = "pc";
-} else if (Process.arch == "arm") {
+} else if (Process.arch.startsWith("arm")) {
   pc = "pc";
 } else {
   console.log("[!] Unknown architecture!");
