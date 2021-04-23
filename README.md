@@ -21,8 +21,8 @@ my employer ([ERNW](https://ernw.de)).
 Required for running fpicker:
 - [frida_compile](https://github.com/frida/frida-compile) to compile the harness script into one JS file
 - The `frida-core-devkit` for the respective platform found at [Frida releases on GitHub](https://github.com/frida/frida/releases)
-    - depending on the platform you want to target store the library as `frida-core-ios.a`, `frida-core-macos.a`, or `frida-core-linux.a`. 
-    Also, linux and macOS/iOS apparently have different header files. 
+    - depending on the platform you want to target store the library as `frida-core-ios.a`, `frida-core-macos.a`, or `frida-core-linux.a`.
+    Also, linux and macOS/iOS apparently have different header files.
 
 Required only when running in AFL++ mode:
 - [AFL++](https://github.com/AFLplusplus/AFLplusplus/)
@@ -76,7 +76,7 @@ afl-fuzz -i examples/test-network/in -o ./examples/test-network/out -- \\
 
 - Run fpicker in standalone mode attaching to a server, fuzzing in-process with a custom mutator cmd:
 ```bash
-./fpicker --fuzzer-mode active --communication-mode shm -e attach -p server-process -f harness.js \\ 
+./fpicker --fuzzer-mode active --communication-mode shm -e attach -p server-process -f harness.js \\
     -i indir -o outdir --standalone-mutator cmd --mutator-command "radamsa"
 ```
 
@@ -85,6 +85,12 @@ afl-fuzz -i examples/test-network/in -o ./examples/test-network/out -- \\
 ./fpicker --fuzzer-mode passive --communication-mode send -e attach -p server-process -o outdir -f harness.js
 ```
 
+- Run fpicker in standalone mode attaching to a running process on a remote device, fuzzing in-process
+with a custom mutator cmd:
+```bash
+./fpicker --fuzzer-mode active -e attach -p test -D remote -o examples/test/out/ -i examples/test/in/ \\
+    -f fuzzer-agent.js --standalone-mutator cmd --mutator-command "radamsa"
+```
 
 ## Creating a Fuzzing Harness
 Each target requires its own fuzzing harness. The most important part of this harness is defining
@@ -250,3 +256,15 @@ mutation certainly has lots of room for improvement.
   writes the payload to stdin and receives the mutated payload from stdout. Due to its shallow
   implementation it has quite a performance impact.
 
+### Network devices
+With option `-D remote` it is possible to fuzz a process running on a network device. For this, the
+remote device must be running `frida-server`. As a sample configuration, use SSH with port
+forwarding to bind the `frida-server` default listening port `27042` on the remote device to a
+socket on the local client.
+```bash
+ssh -N user@network.device -L 127.0.0.1:27042:127.0.0.1:27042
+```
+Then use `frida-ps` to validate the configuration by listing processes on the remote device:
+```bash
+frida-ps -R
+```
