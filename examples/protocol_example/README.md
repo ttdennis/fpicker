@@ -6,7 +6,10 @@ of the process, a connection is referenced by its handle. There are different ca
 connection to be disconnected. The purpose is to show a minimal example of what needs to be done to
 fuzz bluetoothd on iOS
 
-A corresponding tutorial was given at WiSec 2021. A Link will be provided once the video is up.
+A corresponding tutorial was given at WiSec 2021. You can find the recording on [YouTube at
+3:25:00](https://youtu.be/uyAPi663NP4?t=12300). I also uploaded the slides
+[here](./wisec21_tutorial_frida_fuzzing.pdf). However, without audio the slides are probably not
+that useful.
 
 ## Running The Example
 
