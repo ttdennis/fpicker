@@ -268,3 +268,11 @@ Then use `frida-ps` to validate the configuration by listing processes on the re
 ```bash
 frida-ps -R
 ```
+
+The network device can be also Android Mobile.
+
+You can forward the port using ADB Port Fowarding, if you cannot use SSH.
+
+```bash
+adb forward tcp:27042 tcp:27042
+```
