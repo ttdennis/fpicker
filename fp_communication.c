@@ -90,8 +90,12 @@ void on_message(FridaScript *script, const gchar *message, const gchar *data, gp
                         if (fstate->skip_cov) {
                             fstate->skip_cov = false;
                         } else {
-                            coverage_t *cov = stdln_parse_coverage_from_json(json_object_get_array_member(payload_obj, "data"));
-                            fstate->last_coverage = cov;
+                            if (json_object_has_member(payload_obj, "data")) {
+                                coverage_t *cov = stdln_parse_coverage_from_json(json_object_get_array_member(payload_obj, "data"));
+                                fstate->last_coverage = cov;
+                            } else {
+                                fstate->last_coverage = NULL;
+                            }
                         }
 
                         fstate->exec_finished = true;
@@ -159,7 +163,7 @@ void harness_prepare(fuzzer_state_t *fstate) {
     fstate->req_id++;
 
     if (fstate->config->verbose) plog("[*] SEND: %s\n", msg_buf);
-    frida_script_post_sync(fstate->script, msg_buf, NULL, NULL, &error);
+    frida_script_post(fstate->script, msg_buf, NULL);
     if (error != NULL) {
         plog("[!] Error on setup: %s\n", error->message);
         g_error_free(error);
@@ -286,7 +290,7 @@ bool fuzz_iteration_in_process_send(fuzzer_state_t *fstate, uint8_t *buf, uint32
     snprintf(fstate->send_buf, sendbuf_len, "[\"frida:rpc\", %lu, \"call\", \"fuzz\", [\"%s\"]]", fstate->req_id, b64_payload);
     plog_debug("[*] frida post: %s\n", fstate->send_buf);
     // TODO: can we send the payload as raw buffer in the data parameter?
-    frida_script_post_sync(fstate->script, fstate->send_buf, NULL, NULL, &error);
+    frida_script_post(fstate->script, fstate->send_buf, NULL);
     if (error != NULL) {
         plog("[!] Error posting to frida script \"%s\".\n", fstate->send_buf);
         g_error_free(error);

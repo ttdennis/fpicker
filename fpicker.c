@@ -422,7 +422,7 @@ FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
             // crash when afl-showmap is run. When it's a daemon like bluetoothd, it
             // will take a while to restart so we just wait here.
             for (int retry = 0; retry <= 5 && target_pid == 0; retry++) {
-                FridaProcessList *proc_list = frida_device_enumerate_processes_sync(device, NULL, &error);
+                FridaProcessList *proc_list = frida_device_enumerate_processes_sync(device, NULL, NULL, &error);
                 for (int i = 0; i < frida_process_list_size(proc_list) && target_pid == 0; i++) {
                     FridaProcess *proc = frida_process_list_get(proc_list, i);
                     if (strncmp(frida_process_get_name(proc), config->process_name, strlen(config->process_name)) == 0) {
