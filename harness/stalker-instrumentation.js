@@ -55,12 +55,11 @@ module.exports = new CModule(`
     struct _user_data *ud = (struct _user_data*)user_data;
 
     uintptr_t cur_loc = cpu_context->${pc} - ud->base;
-    uintptr_t prev_loc = ud->prev_loc;
     uint8_t * afl_area_ptr = ud->afl_area_ptr;
 
     cur_loc  = (cur_loc >> 4) ^ (cur_loc << 8);
     cur_loc &= 65536 - 1;
-    afl_area_ptr[cur_loc ^ prev_loc]++;
-    prev_loc = cur_loc >> 1;
+    afl_area_ptr[cur_loc ^ ud->prev_loc]++;
+    ud->prev_loc = cur_loc >> 1;
   }
 `);
