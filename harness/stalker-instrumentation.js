@@ -4,8 +4,10 @@ if (Process.arch == "x64") {
   pc = "rip";
 } else if (Process.arch.startsWith("arm")) {
   pc = "pc";
+} else if (Process.arch.startsWith("ia32")) {
+  pc = "eip";
 } else {
-  console.log("[!] Unknown architecture!");
+  console.log("[!] Unknown architecture!", Process.arch);
 }
 
 module.exports = new CModule(`
