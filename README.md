@@ -272,6 +272,10 @@ mutation certainly has lots of room for improvement.
   writes the payload to stdin and receives the mutated payload from stdout. Due to its shallow
   implementation it has quite a performance impact.
 
+### USB devices
+
+Using the `-D usb` device option, Frida will pick the first local USB device, e.g. an iPhone or Android phone.
+
 ### Network devices
 With option `-D remote` it is possible to fuzz a process running on a network device. For this, the
 remote device must be running `frida-server`. As a sample configuration, use SSH with port
@@ -280,6 +284,16 @@ socket on the local client.
 ```bash
 ssh -N user@network.device -L 127.0.0.1:27042:127.0.0.1:27042
 ```
+
+On an iPhone, one can also use `iproxy` to forward the port from a USB connection.
+This might be especially useful if running Frida on a non-standard port on a non-jailbroken device
+with the Frida gadget. When working with the Frida gadget, the only available process will have the
+name `Gadget`, regardless of the target app name.
+
+```bash
+iproxy 27042 27042
+```
+
 Then use `frida-ps` to validate the configuration by listing processes on the remote device:
 ```bash
 frida-ps -R
