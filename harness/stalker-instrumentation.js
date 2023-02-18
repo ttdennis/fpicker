@@ -10,7 +10,7 @@ if (Process.arch == "x64") {
   console.log("[!] Unknown architecture!", Process.arch);
 }
 
-module.exports = new CModule(`
+export const stalker_instrumentation = new CModule(`
   #include <gum/gumstalker.h>
   #include <stdint.h>
   #include <stdio.h>

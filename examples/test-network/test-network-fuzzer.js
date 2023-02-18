@@ -1,5 +1,5 @@
 // Import the fuzzer base class
-const Fuzzer = require("../../harness/fuzzer.js");
+import { Fuzzer } from "../../harness/fuzzer.js";
 
 // The custom fuzzer needs to subclass the Fuzzer class to work properly
 class TestFuzzer extends Fuzzer.Fuzzer {
@@ -49,4 +49,4 @@ class TestFuzzer extends Fuzzer.Fuzzer {
 }
 
 const f = new TestFuzzer();
-exports.fuzzer = f;
+rpc.exports.fuzzer = f;

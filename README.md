@@ -21,10 +21,24 @@ my employer ([ERNW](https://ernw.de)).
 Required for running fpicker:
 - [frida_compile](https://github.com/frida/frida-compile) to compile the harness script into one JS file
 - The `frida-core-devkit` for the respective platform found at [Frida releases on GitHub](https://github.com/frida/frida/releases).
-    - Depending on the platform you want to target store the library as `frida-core-ios.a`, `frida-core-macos.a`, or `frida-core-linux.a`.
+    - Depending on the platform you want to target store the library as `libfrida-core-ios.a`, `libfrida-core-macos.a`, or `libfrida-core-linux.a`.
     - The same goes for the header files (`frida-core.h`). Store them as `frida-core-linux.h` or `frida-core-ios.h` depending on the platform.
     - The makefile was built this way so you can build for different systems on the same system (usually this is for building on macOS, where
       you can compile for both iOS and macOs). (There is probably a better way do to this?)
+
+    For example, run the following commands:
+    ```
+    cd fpicker
+    wget https://github.com/frida/frida/releases/[yourversion].tar.xz
+    unxz *tar.xz
+    mkdir frida-devkit
+    cd frida-devkit
+    tar -xzf ../*tar
+    cd ..
+    cp frida-devkit/libfrida-core.a libfrida-core-[youros].a
+    cp frida-devkit/frida-core.h frida-core-[youros].h
+    ```
+    Afterwards, `make fpicker-[youros]` should succeed.
 
 Required only when running in AFL++ mode:
 - [AFL++](https://github.com/AFLplusplus/AFLplusplus/)
@@ -258,6 +272,10 @@ mutation certainly has lots of room for improvement.
   writes the payload to stdin and receives the mutated payload from stdout. Due to its shallow
   implementation it has quite a performance impact.
 
+### USB devices
+
+Using the `-D usb` device option, Frida will pick the first local USB device, e.g. an iPhone or Android phone.
+
 ### Network devices
 With option `-D remote` it is possible to fuzz a process running on a network device. For this, the
 remote device must be running `frida-server`. As a sample configuration, use SSH with port
@@ -266,6 +284,16 @@ socket on the local client.
 ```bash
 ssh -N user@network.device -L 127.0.0.1:27042:127.0.0.1:27042
 ```
+
+On an iPhone, one can also use `iproxy` to forward the port from a USB connection.
+This might be especially useful if running Frida on a non-standard port on a non-jailbroken device
+with the Frida gadget. When working with the Frida gadget, the only available process will have the
+name `Gadget`, regardless of the target app name.
+
+```bash
+iproxy 27042 27042
+```
+
 Then use `frida-ps` to validate the configuration by listing processes on the remote device:
 ```bash
 frida-ps -R
