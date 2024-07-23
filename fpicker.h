@@ -242,5 +242,5 @@ void create_communication_map(fuzzer_state_t *fstate);
 void harness_prepare(fuzzer_state_t *fstate);
 void _system_cmd(char *command, bool should_log);
 
-bool verbose;
+extern bool verbose;
 #define plog_debug(fmt, args...) if(verbose) plog(fmt, ##args);
