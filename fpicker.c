@@ -10,6 +10,9 @@
 // is consumed by AFL.
 bool log_to_syslog = false;
 
+// Global variable indicating whether verbose mode is set.
+bool verbose = false;
+
 struct timeval *_start_measure() {
     struct timeval *t = malloc(sizeof(struct timeval));
     gettimeofday(t, NULL);
