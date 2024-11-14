@@ -1,5 +1,5 @@
-FRAMEWORKS_MACOS = -framework Foundation -framework CoreGraphics -framework AppKit
-FRAMEWORKS_iOS = -framework Foundation -framework CoreGraphics -framework UIKit
+FRAMEWORKS_MACOS = -framework Foundation -framework CoreGraphics -framework AppKit -framework IOKit -framework Security
+FRAMEWORKS_iOS = -framework Foundation -framework CoreGraphics -framework UIKit -framework IOKit -framework Security
 
 CC_MACOS = xcrun -r clang
 CC_iOS = xcrun -sdk iphoneos -r clang
