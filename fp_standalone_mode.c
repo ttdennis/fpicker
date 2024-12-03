@@ -373,6 +373,7 @@ void stdln_write_coverage_to_disk(fuzzer_state_t *fstate, char *name, coverage_t
             snprintf(row, 256, "%d, 0x%llx, 0x%llx, 0x0000000000000000, 0x00000000, 0x00000000, %s\n", idx, m->start, m->end, m->name);
             strncat(fstate->drcov_modules_str, row, 256);
             m = m->next;
+            idx++;
         }
     }
 
