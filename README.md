@@ -45,10 +45,7 @@ Required only when running in AFL++ mode:
     - on macOS:
         - Compile with `CFLAGS="-DUSEMMAP=1"`.
     - on iOS:
-        - Apply the aflpp-ios.patch. This changes the shared mem and out file mode to 666 instead of
-          600. Fpicker needs to be run as root on iOS. If the target is not running as root, it will
-          not be able to read and write shared memory.
-        - Compile with `CFLAGS="-DUSEMMAP=1"`.
+        - Compile with `CFLAGS="-DUSEMMAP=1 -DTARGET_OS_IOS"`.
 
 
 ## Building and Running
