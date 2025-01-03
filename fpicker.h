@@ -1,8 +1,4 @@
-#ifdef __linux__
-    #include "frida-core-linux.h"
-#else
-    #include "frida-core.h"
-#endif
+#include "frida-core.h"
 
 #include <syslog.h>
 #include <stdint.h>
