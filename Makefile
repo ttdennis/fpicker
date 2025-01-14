@@ -41,7 +41,8 @@ $(DEVKIT_FILENAME):
 		if [ $$? -ne 0 ]; then \
 			echo "Error downloading $(DEVKIT_FILENAME)"; exit 1; \
 		fi; \
-		if [ $$(stat -c%s $@) -lt 1000 ]; then \
+		FILE_SIZE=$$(stat -f%z $@ 2>/dev/null || stat -c%s $@ 2>/dev/null); \
+		if [ $$FILE_SIZE -lt 1000 ]; then \
 			echo "Error: Downloaded file $(DEVKIT_FILENAME) is too small. Ensure your system is supported by Frida."; \
 			rm -f $@; exit 1; \
 		fi; \
