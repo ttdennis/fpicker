@@ -27,7 +27,7 @@ ifeq ($(MAKECMDGOALS), fpicker-ios)
   LDFLAGS += -arch $(ARCH)
 endif
 
-FRIDA_VERSION = 16.5.9
+FRIDA_VERSION = 16.6.6
 BASE_URL = https://github.com/frida/frida/releases/download/$(FRIDA_VERSION)
 DEVKIT_FILENAME = frida-core-devkit-$(FRIDA_VERSION)-$(OS)-$(ARCH).tar.xz
 DEVKIT_URL = $(BASE_URL)/$(DEVKIT_FILENAME)
