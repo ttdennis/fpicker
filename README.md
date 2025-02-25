@@ -21,6 +21,9 @@ my employer ([ERNW](https://ernw.de)).
 Required for running fpicker:
 - [frida_compile](https://github.com/frida/frida-compile) to compile the harness script into one JS file
 - The `frida-core-devkit` for the respective platform found at [Frida releases on GitHub](https://github.com/frida/frida/releases).
+    - Depending on the platform you want to target store the library as `libfrida-core-ios.a`, `libfrida-core-macos.a`, or `libfrida-core-linux.a`.
+    - The same goes for the header files (`frida-core.h`). Store them as `frida-core-linux.h` or `frida-core-ios.h` depending on the platform.
+    - The makefile was built this way so you can build for different systems on the same system (e.g., your host system and the phone).
     - If you prefer to use a specific version, adjust the Makefile accordingly.
     - To update to the latest version, simply run `update_frida_version.sh` before building.
 
