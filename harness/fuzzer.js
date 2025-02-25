@@ -1,13 +1,17 @@
 // This is the main fuzzing harness class that needs to be instatiated by every 
 // project specific script.
+import { darwin_shm } from "./darwin-shm.js";
+import { stalker_instrumentation } from "./stalker-instrumentation.js";
 
-class Fuzzer {
+
+export class Fuzzer {
     constructor(module, target_function_addr, target_function) {
         // Darwin (iOS/macOS) needs a different mechanism for shared memory
         if (Process.platform == "darwin") {
-            this.darwin_shm = require("./darwin-shm.js");
+
+            this.darwin_shm = darwin_shm;
         }
-        this.stalker_instrumentation = require("./stalker-instrumentation.js");
+        this.stalker_instrumentation = stalker_instrumentation;
 
         // toggles whether debug_print prints something
         this.DEBUG = false;
@@ -37,14 +41,16 @@ class Fuzzer {
             console.log("PC: ", arg, base);
         }, "void", ["pointer"])
 
-        Stalker.trustThreshold = 0;
-        Stalker.queueCapacity = 100000000;
+        Stalker.trustThreshold = 3;      // Only trust translated stalker blocks after 3 executions
+        Stalker.queueCapacity = 0x8000;  // If queue capacity is too big, the stalker won't work
         Stalker.queueDrainInterval = 1000 * 1000;
 
         this.stalker_events = undefined;
 
         // A buffer needs to be allocated for the payload that is supplied to the targeted function.
-        this.payload_buffer = Memory.alloc(0x500);
+        // The target function should check the length is not exceeded.
+        this.payload_maxlen = 0x4000;
+        this.payload_buffer = Memory.alloc(this.payload_maxlen);
 
         this._function_setup();
         this._rpc_setup();
@@ -52,6 +58,7 @@ class Fuzzer {
         this.debug_log("[*] Fuzzer constructor end.")
     }
 
+    // add end address and a unique identifier to each map entry
     _make_maps() {
         let maps = Process.enumerateModulesSync();
         let i = 0;
@@ -133,7 +140,7 @@ class Fuzzer {
         //   void (*log)(long); 
         // };
         //
-        const _user_data = Memory.alloc(40);
+        const _user_data = Memory.alloc(48);
         const mod = this._get_module_obj(this.module);
 
         if (self.fuzzer_mode == "AFL") {
@@ -173,7 +180,7 @@ class Fuzzer {
                         onReceive: function (events) {
                             self.stalker_events = Stalker.parse(events, {stringify: false, annotate: false});
                         }
-                    })
+                    });
                 } else {
                     Stalker.follow({
                         events: stalker_event_config,
@@ -378,4 +385,3 @@ class Fuzzer {
     }
 }
 
-exports.Fuzzer = Fuzzer;

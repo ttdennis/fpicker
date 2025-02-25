@@ -81,7 +81,11 @@ module_t *stdln_parse_modules_from_json(JsonArray *arr) {
     // TODO: for now we only consider the first module (the fuzzed binary itself)
     // in the future we might want to let the user specify which modules should
     // be considered, e.g. by providing a list as parameter
-    len = 1;
+
+    // BUGFIX: When we have a debug app with a debug.dylib, we must collect coverage
+    // in that module as well. Collecting coverage in all modules is slower, but
+    // at least it works.
+    //len = 1;
 
     module_t *last_mod = NULL;
     module_t *first_mod = NULL;
@@ -369,6 +373,7 @@ void stdln_write_coverage_to_disk(fuzzer_state_t *fstate, char *name, coverage_t
             snprintf(row, 256, "%d, 0x%llx, 0x%llx, 0x0000000000000000, 0x00000000, 0x00000000, %s\n", idx, m->start, m->end, m->name);
             strncat(fstate->drcov_modules_str, row, 256);
             m = m->next;
+            idx++;
         }
     }
 

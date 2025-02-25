@@ -10,6 +10,9 @@
 // is consumed by AFL.
 bool log_to_syslog = false;
 
+// Global variable indicating whether verbose mode is set.
+bool verbose = false;
+
 struct timeval *_start_measure() {
     struct timeval *t = malloc(sizeof(struct timeval));
     gettimeofday(t, NULL);
@@ -417,11 +420,12 @@ FridaSession *spawn_or_attach(fuzzer_state_t *fstate) {
         plog("[*] Spawned %s with PID %d\n", config->process_name, target_pid);
     } else {
         if (config->process_name != NULL) {
-            plog("[*] Trying to attach to process %s\n", config->process_name);
+            plog("[*] Trying to attach to process with name %s.\n", config->process_name);
             // This loop is mainly for afl-cmin as the attached binary often seems to
             // crash when afl-showmap is run. When it's a daemon like bluetoothd, it
             // will take a while to restart so we just wait here.
             for (int retry = 0; retry <= 5 && target_pid == 0; retry++) {
+                // FIXME if the frida port for remote device is not forwarded, this just segfaults
                 FridaProcessList *proc_list = frida_device_enumerate_processes_sync(device, NULL, NULL, &error);
                 for (int i = 0; i < frida_process_list_size(proc_list) && target_pid == 0; i++) {
                     FridaProcess *proc = frida_process_list_get(proc_list, i);
@@ -573,6 +577,7 @@ int main(int argc, char **argv) {
         desired_type = FRIDA_DEVICE_TYPE_USB;
     } else if (fstate->config->device == DEVICE_REMOTE) {
         desired_type = FRIDA_DEVICE_TYPE_REMOTE;
+        plog("[*] Set remote device. Ensure the port 27042 is forwarded!\n"); // FIXME warning as long as this doesn't work
     }
     for (int i = 0; i < num_devices && device == NULL; i++) {
         FridaDevice *dev = frida_device_list_get(devices, i);

@@ -8,6 +8,7 @@ libfrida-core.a
 libfrida-core-ios.a
 libfrida-core-macos.a
 libfrida-core-linux.a
+frida-devkit-*
 
 node_modules
 package.json
