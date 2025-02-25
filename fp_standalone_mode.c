@@ -17,7 +17,7 @@ void stdln_init(fuzzer_state_t *fstate) {
         plog("[!] Standalone passive in coverage mode AFL bitmap not implemented yet.\n");
         do_exit(fstate);
     }
-    
+
     fstate->corpus_count = 0;
     fstate->last_err = NULL;
 
@@ -41,7 +41,7 @@ coverage_t *stdln_parse_coverage_from_json(JsonArray *arr) {
         blocks[i].start = strtol(json_array_get_string_element(entry, 0), NULL, 0);
         blocks[i].end= strtol(json_array_get_string_element(entry, 1), NULL, 0);
     }
-   
+
     cov->basic_blocks = blocks;
     return cov;
 }
@@ -51,7 +51,7 @@ corpus_entry_t *stdln_parse_corpus_from_json(JsonObject *obj) {
     gsize b64_len = 0;
     const char *data = NULL;
     char *data_dec = NULL;
-    
+
     data = json_object_get_string_member(obj, "data");
     if (data == NULL) {
         return corp;
@@ -91,29 +91,32 @@ module_t *stdln_parse_modules_from_json(JsonArray *arr) {
     module_t *first_mod = NULL;
     for (int i = 0; i < len; i++) {
         JsonObject *obj = json_array_get_object_element(arr, i);
-        module_t *mod = malloc(sizeof(module_t));
 
         const char *name = json_object_get_string_member(obj, "path");
-        const char *start = json_object_get_string_member(obj, "base");
-        const char *end = json_object_get_string_member(obj, "end");
-        size_t len = strlen(name) + 1;
-        
-        mod->name = malloc(len);
-        strncpy(mod->name, name, len);
-        mod->name[len-1] = 0;
+        const char *base_str = json_object_get_string_member(obj, "base");
+        const guint64 size = json_object_get_int_member(obj, "size");
 
-        plog("[*] MODULE=%s, start=%s, end=%s\n", name, start, end);
-        
-        mod->start = strtol(start, NULL, 0);
-        mod->end = strtol(end, NULL, 0);
+        module_t *mod = malloc(sizeof(module_t));
+        if (!mod) {
+            plog("[!] malloc failed for module structure\n");
+            continue;
+        }
+
+        size_t name_len = strlen(name) + 1;
+        mod->name = malloc(name_len);
+        strncpy(mod->name, name, name_len);
+        mod->name[name_len - 1] = '\0';
+        mod->start = strtol(base_str, NULL, 0);
+        mod->end = mod->start + size;
         mod->next = NULL;
 
-        if (last_mod == NULL) {
-            first_mod = mod;
-            last_mod = mod;
+        plog("[*] MODULE=%s, base=0x%llx, end=0x%llx\n", name, mod->start, mod->end);
+
+        if (!last_mod) {
+            first_mod = last_mod = mod;
         } else {
             last_mod->next = mod;
-            last_mod = last_mod->next;
+            last_mod = mod;
         }
     }
 
@@ -323,7 +326,7 @@ void stdln_add_coverage_to_state(fuzzer_state_t *fstate, coverage_t *cov) {
         return;
     }
 
-    // for each entry in this coverage we check if it is not yet in the fuzzer's 
+    // for each entry in this coverage we check if it is not yet in the fuzzer's
     // accumulated coverage, TODO: make this more clever/better performing if required
     for (int i = 0; i < cov->basic_block_count; i++) {
         if (!stdln_is_bb_in_module(fstate, &cov->basic_blocks[i]) || stdln_is_bb_in_fuzzer_coverage(fstate, &cov->basic_blocks[i])) {
@@ -357,7 +360,7 @@ void stdln_write_coverage_to_disk(fuzzer_state_t *fstate, char *name, coverage_t
             module_count++;
             m = m->next;
         }
-        // allocate 256 bytes per row (+ header) in the module table, should be 
+        // allocate 256 bytes per row (+ header) in the module table, should be
         // enough even for the long module names that Apple sometimes has...
         fstate->drcov_modules_str = malloc(256 * (module_count + 1));
         bzero(fstate->drcov_modules_str, 256 * module_count);
@@ -413,7 +416,7 @@ void stdln_write_coverage_to_disk(fuzzer_state_t *fstate, char *name, coverage_t
 
         fwrite((void *)&bb, sizeof(bb), 1, f);
     }
-    
+
     if (fstate->config->verbose) {
         plog("[*] Wrote coverage to %s\n", cov_filename);
     }
@@ -431,7 +434,7 @@ void stdln_get_corpus_coverage(fuzzer_state_t *fstate) {
         // TODO: maybe repeat this to catch coverage differents between runs for the
         // same input and notify the user about instability
         coverage_t *cur_cov = stdln_fuzz_payload(fstate, corp);
-        // TODO: handle coverage_bitmap case 
+        // TODO: handle coverage_bitmap case
         if (cur_cov == NULL) {
             plog("[!] Error getting coverage for payload %s (probably due to crash)\n", corp->name);
         } else if ((void *)cur_cov == (void *)0x01) {
@@ -447,7 +450,7 @@ void stdln_get_corpus_coverage(fuzzer_state_t *fstate) {
         corp = corp->next;
     }
 
-    plog("[*] Using %lu input files covering a total of %lu basic blocks\n", 
+    plog("[*] Using %lu input files covering a total of %lu basic blocks\n",
             fstate->corpus_count, fstate->coverage.basic_block_count);
 }
 
@@ -517,7 +520,7 @@ corpus_entry_t *stdln_mutate_corpus_entry(fuzzer_state_t *fstate, corpus_entry_t
         int count = rand() % 12;
         for (int i = 0; i < count; i++) {
             uint64_t pos = rand() % newcorp->length;
-            uint8_t val = rand() % 0xff; 
+            uint8_t val = rand() % 0xff;
 
             if (pos < newcorp->length)
                 newcorp->data[pos] = val;
@@ -533,7 +536,7 @@ corpus_entry_t *stdln_mutate_corpus_entry(fuzzer_state_t *fstate, corpus_entry_t
     } else if (fstate->config->standalone_mutator == STANDALONE_MUTATOR_CUSTOM) {
         size_t payload_len = _mutate_custom_cmd(fstate->config->custom_mutator_cmd, incorp,
                                                 fstate->custom_mutator_buf, fstate->custom_mutator_bufsize);
-                                                
+
         newcorp->data = malloc(payload_len);
         bzero(newcorp->data, payload_len);
         newcorp->length = payload_len;
@@ -581,7 +584,7 @@ bool stdln_is_coverage_new(fuzzer_state_t *fstate, coverage_t *cov) {
          if (!stdln_is_bb_in_module(fstate, &cov->basic_blocks[i])) {
              continue;
          }
-        
+
         bool did_find_bb_in_state = false;
         for(int j = 0; j < fstate->coverage.basic_block_count; j++) {
             if ((cov->basic_blocks[i].start == fstate->coverage.basic_blocks[j].start) &&
@@ -649,8 +652,8 @@ void stdln_fuzz_loop(fuzzer_state_t *fstate) {
         int cov_avg = fstate->coverage_time / fstate->total_payload_count;
         uint64_t cur_loop_time = _stop_measure(cur_loop_timer);
         plog("[t=%lu] [BBs=%zu] [seed=%llu] [fc=%llu] [fcps=%d] [cur_loop=%llu] [mut_avg=%d] "
-                "[cov_avg=%d] [corpus=%zu]\n", 
-                time(NULL), fstate->coverage.basic_block_count, seed, fstate->total_payload_count, 
+                "[cov_avg=%d] [corpus=%zu]\n",
+                time(NULL), fstate->coverage.basic_block_count, seed, fstate->total_payload_count,
                 fcps, cur_loop_time, mut_avg, cov_avg, fstate->corpus_count);
 
         fstate->config->seed = seed + 1;
@@ -690,8 +693,8 @@ void stdln_passive_loop(fuzzer_state_t *fstate) {
         int fcps = fstate->total_payload_count / (t_elapsed.tv_sec != 0 ? t_elapsed.tv_sec : 1);
         int cov_avg = fstate->coverage_time / fstate->total_payload_count;
         uint64_t cur_loop_time = _stop_measure(cur_loop_timer);
-        plog("[t=%lu] [BBs=%zu] [fc=%llu] [fcps=%d] [cur_loop=%llu] [cov_avg=%d]\n", 
-                time(NULL), fstate->coverage.basic_block_count, fstate->total_payload_count, 
+        plog("[t=%lu] [BBs=%zu] [fc=%llu] [fcps=%d] [cur_loop=%llu] [cov_avg=%d]\n",
+                time(NULL), fstate->coverage.basic_block_count, fstate->total_payload_count,
                 fcps, cur_loop_time, cov_avg);
     }
 }
